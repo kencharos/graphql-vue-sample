@@ -2,8 +2,10 @@ const koa = require('koa');
 const koaRouter = require('koa-router');
 const koaBody = require('koa-bodyparser');
 const { graphqlKoa, graphiqlKoa } = require('apollo-server-koa');
+const cors = require('@koa/cors');
 
 const app = new koa();
+app.use(cors());
 const router = new koaRouter();
 const PORT = 3000;
 
@@ -27,15 +29,17 @@ const books = [
 
 // GraphQLのスキーマ情報
 // Query-取得操作、 Mutation-変更操作, 他:型定義. !はRequired
+// 引数専用の 複合型として input が使用できる。
 const typeDefs = `
   type Query { 
     book(id: String!): Book  
     books: [Book] 
   }
   type Mutation {
-    addBook(id: String!, title: String!, author: String!, price:Int!): Book 
+    addBook(book:NewBook!): Book 
   }
   type Book { id:String!, title: String!, author: String!, price:Int! }
+  input NewBook { id:String!, title: String!, author: String!, price:Int! }
 `;
 
 // resolver(データ処理)の設定。
@@ -53,8 +57,9 @@ const resolvers = {
   },
   Mutation: {
     addBook: (root, args) => {
-        let {id, title, author, price} = args;
-        let book = {id:id, title:title, author:author, price:price};
+        let {book} = args;
+       // let {id, title, author, price} = args;
+       // let book = {id:id, title:title, author:author, price:price};
         books.push(book);
         return book;
     }

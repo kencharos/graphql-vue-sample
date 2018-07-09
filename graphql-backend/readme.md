@@ -19,6 +19,7 @@ if shecme is bellow.
     addBook(id: String!, title: String!, author: String!, price:Int!): Book 
   }
   type Book { id:String!, title: String!, author: String!, price:Int! }
+  input NewBook { id:String!, title: String!, author: String!, price:Int! }
 ```
 
 Client is following.
@@ -63,7 +64,7 @@ query{
 
 ```
 mutation {
-  addBook(id: "3", title: "t", author: "a", price: 3000) {
+  addBook(book{id: "3", title: "t", author: "a", price: 3000}) {
     id
   }
 }

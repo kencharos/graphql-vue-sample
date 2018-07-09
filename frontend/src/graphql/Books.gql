@@ -1,0 +1,7 @@
+#import "./BookFragment.gql"
+
+query books {
+  books {
+    ...Book
+  }
+}

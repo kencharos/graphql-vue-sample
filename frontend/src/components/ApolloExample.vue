@@ -1,18 +1,10 @@
 <template>
   <div class="apollo-example">
-    <!-- Cute tiny form -->
-    <div class="form">
-      <input
-        v-model="name"
-        placeholder="Type a name"
-        class="input"
-      >
-    </div>
 
     <!-- Apollo watched Graphql query -->
     <ApolloQuery
-      :query="require('../graphql/HelloWorld.gql')"
-      :variables="{ name }"
+      :query="require('../graphql/Books.gql')"
+      :variables="{id, title, author, price }"
     >
       <template slot-scope="{ result: { loading, error, data } }">
         <!-- Loading -->
@@ -22,107 +14,71 @@
         <div v-else-if="error" class="error apollo">An error occured</div>
 
         <!-- Result -->
-        <div v-else-if="data" class="result apollo">{{ data.hello }}</div>
+        <div v-else-if="data" class="result apollo">
+          <table>
+            <tr><th>ID</th><th>title</th><th>author</th><th>price</th></tr>
+            <tr v-for="book in data.books">
+              <td>{{book.id}}</td>
+              <td>{{book.title}}</td>
+              <td>{{book.author}}</td>
+              <td>{{book.price}}</td>
+            </tr>
+
+          </table>
+
+        </div>
 
         <!-- No result -->
         <div v-else class="no-result apollo">No result :(</div>
       </template>
     </ApolloQuery>
 
-    <!-- Tchat example -->
-    <ApolloQuery
-      :query="require('../graphql/Messages.gql')"
-    >
-      <ApolloSubscribeToMore
-        :document="require('../graphql/MessageAdded.gql')"
-        :update-query="onMessageAdded"
-      />
-
-      <div slot-scope="{ result: { data } }">
-        <template v-if="data">
-          <div
-            v-for="message of data.messages"
-            :key="message.id"
-            class="message"
-          >
-            {{ message.text }}
-          </div>
-        </template>
-      </div>
-    </ApolloQuery>
 
     <div class="form">
-      <input
-        v-model="newMessage"
-        placeholder="Type a message"
-        class="input"
-        @keyup.enter="sendMessage"
-      >
+      id<input v-model="id" class="input">
+      title<input v-model="title" class="input">
+      author<input v-model="author" class="input">
+      price<input v-model="price" class="input" number><br>
+      <button @click="addBook">Add Book</button>
     </div>
   </div>
 </template>
 
 <script>
-import MESSAGE_ADD_MUTATION from '../graphql/MessageAdd.gql'
+import BOOK_ADD_MUTATION from '../graphql/BookAdd.gql';
+import TAGS_QUERY from '../graphql/Books.gql';
 
 export default {
-  data () {
+  data() {
     return {
-      name: 'Anne',
-      newMessage: '',
-    }
+      id: '',
+      title: '',
+      author: '',
+      price: 0,
+    };
   },
 
   computed: {
-    formValid () {
-      return this.newMessage
-    },
   },
 
   methods: {
-    sendMessage () {
-      if (this.formValid) {
-        this.$apollo.mutate({
-          mutation: MESSAGE_ADD_MUTATION,
-          variables: {
-            input: {
-              text: this.newMessage,
-            },
+    addBook() {
+      this.$apollo.mutate({
+        mutation: BOOK_ADD_MUTATION,
+        variables: {
+          book: {
+            id: this.id,
+            title: this.title,
+            author: this.author,
+            price: this.price,
           },
-        })
-
-        this.newMessage = ''
-      }
-    },
-
-    onMessageAdded (previousResult, { subscriptionData }) {
-      return {
-        messages: [
-          ...previousResult.messages,
-          subscriptionData.data.messageAdded,
-        ],
-      }
+        },
+        update: (store, { data: { newTag } }) => {
+          //TODO, refresh by SPA.
+          window.location.reload();
+        }
+      });
     },
   },
-}
+};
 </script>
-
-<style scoped>
-.form,
-.input,
-.apollo,
-.message {
-  padding: 12px;
-}
-
-.input {
-  font-family: inherit;
-  font-size: inherit;
-  border: solid 2px #ccc;
-  border-radius: 3px;
-}
-
-.error {
-  color: red;
-}
-</style>
