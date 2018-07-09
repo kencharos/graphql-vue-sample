@@ -46,7 +46,7 @@
 
 <script>
 import BOOK_ADD_MUTATION from '../graphql/BookAdd.gql';
-import TAGS_QUERY from '../graphql/Books.gql';
+import BOOKS_QUERY from '../graphql/Books.gql';
 
 export default {
   data() {
@@ -73,10 +73,14 @@ export default {
             price: this.price,
           },
         },
-        update: (store, { data: { newTag } }) => {
-          //TODO, refresh by SPA.
-          window.location.reload();
-        }
+        // update local store date when mutation finished.
+        //update: (store, { data: { newTag } }) => {
+        //},
+        // refetch from server when mutation finished.
+        refetchQueries: (res) => {
+          console.log(res);
+          return [{query:BOOKS_QUERY, variables:{}}];
+        },
       });
     },
   },
